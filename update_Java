@@ -67,6 +67,7 @@ function update_java_PS(){
         $JDKInstallDir = $javapath + $newJDKVersion
         $JREInstallDir = $javapath + $newJREVersion
         $LogLocation = $javapath + $newJDKVersion + ".log"
+        #Check the flags, this was tested with JDK 7 update 91. Different version may not accept all these flags
         $argumentString = '/s ADDLOCAL="ToolsFeature,SourceFeature,PublicjreFeature" /INSTALLDIR="' + $JDKInstallDir + '" /INSTALLDIRPUBJRE="' + $JREInstallDir + '" /L "' + $LogLocation + '"'
         start-process $patchFilename -ArgumentList $argumentString -verb runas
 
