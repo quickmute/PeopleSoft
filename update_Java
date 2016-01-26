@@ -2,6 +2,14 @@
 # For updating Java on Peoplesoft Machines
 # 
 # Created: 1/8/2016
+# Last Edit: 1/26/2016
+# Version 1.0
+#  First build
+# Version 1.1
+#  Changed process wait function tobe compatible with older version of powershell
+# version 2.0
+#  Made this into a function
+#  Modified file edit section to be more modular
 #
 #
 ###############################################################################
@@ -35,24 +43,22 @@ function update_java_PS(){
         if ($currentJava.Count){
             $myCounter = 0
             for($myCounter = 0; $myCounter -lt $CurrentJava.Count; $myCounter++){
-                write-host $mycounter : $currentJava[$myCounter].name.newJDKVersion()
+                write-host $mycounter : $currentJava[$myCounter].name.toString()
             }
 
             $myCounter = $myCounter - 1
             $ans1 = read-host "Select the current Java version being used by PeopleSoft (0-$myCounter)"
 
             if (($ans1 -ge 0) -and ($ans1 -le $myCounter)){
-                $fromString = $currentJava[$ans1].name.newJDKVersion()
+                $fromString = $currentJava[$ans1].name.tostring()
             }else{
                 write-host "Unknown Java version selected"
                 read-host "Press any key to continue"
             }
         }else{
-            $fromString = $currentJava.name.newJDKVersion()
+            $fromString = $currentJava.name.toString()
         }
     }
-
-    
 
     if ($fromString -ne $null){
         write-host "Current Java Version: " $fromString
@@ -61,7 +67,7 @@ function update_java_PS(){
         $JDKInstallDir = $javapath + $newJDKVersion
         $JREInstallDir = $javapath + $newJREVersion
         $LogLocation = $javapath + $newJDKVersion + ".log"
-        $argumentString = 'ADDLOCAL="ToolsFeature,SourceFeature,PublicjreFeature" /INSTALLDIR="' + $JDKInstallDir + '" /INSTALLDIRPUBJRE="' + $JREInstallDir + '" /L "' + $LogLocation + '"'
+        $argumentString = '/s ADDLOCAL="ToolsFeature,SourceFeature,PublicjreFeature" /INSTALLDIR="' + $JDKInstallDir + '" /INSTALLDIRPUBJRE="' + $JREInstallDir + '" /L "' + $LogLocation + '"'
         start-process $patchFilename -ArgumentList $argumentString -verb runas
 
         $psoftprocesses = get-process | Where-Object {($_.name -like $toProcessString)}
