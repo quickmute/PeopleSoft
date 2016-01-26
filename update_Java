@@ -2,14 +2,6 @@
 # For updating Java on Peoplesoft Machines
 # 
 # Created: 1/8/2016
-# Last Edit: 1/26/2016
-# Version 1.0
-#  First build
-# Version 1.1
-#  Changed process wait function tobe compatible with older version of powershell
-# version 2.0
-#  Made this into a function
-#  Modified file edit section to be more modular
 #
 #
 ###############################################################################
@@ -17,56 +9,60 @@ function update_java_PS(){
     param(
         [parameter(Mandatory=$false,ValueFromPipeLine=$true,ValueFromPipeLineByPropertyName=$true,HelpMessage='SourceFile?')]
         [string]$patchFilename = "e:\temp\p21689625_17091_MSWIN-x86-64\jdk-7u91-windows-x64.exe",
-        [parameter(Mandatory=$false,ValueFromPipeLine=$true,ValueFromPipeLineByPropertyName=$true,HelpMessage='CommonName?')]
-        [string]$toString = "jdk1.7.0_91",
+        [parameter(Mandatory=$false,ValueFromPipeLine=$true,ValueFromPipeLineByPropertyName=$true,HelpMessage='JDK version?')]
+        [string]$newJDKVersion = "jdk1.7.0_91",
         [parameter(Mandatory=$false,ValueFromPipeLine=$true,ValueFromPipeLineByPropertyName=$true,HelpMessage='ProcessName?')]
-        [string]$toProcessString = "jdk-7u91"
+        [string]$toProcessString = "jdk-7u91",
+        [parameter(Mandatory=$false,ValueFromPipeLine=$true,ValueFromPipeLineByPropertyName=$true,HelpMessage='JRE version?')]
+        [string]$newJREVersion = "jre7"
+
     )
-    $server = $env:COMPUTERNAME
     if ($toprocessString.Substring($toprocessString.Length-1,1) -ne "*"){
         $toProcessString = $toProcessString + "*"
     }
     write-host "Checking existing version"
-    # This is the root directory of PeopleSoft JAVA
-    $thispath = "\\$server\e$\oracle\Middleware_pt853\java"
-    $currentJava = Get-ChildItem $thispath | Where-Object {$_.name -like "jdk*"} | ?{$_.PSIsContainer} | select Name
+    $middlewarePath = "e:\oracle\Middleware_pt853\"
+    $javapath = $middlewarePath + "java\"
+    $currentJava = Get-ChildItem $javapath | Where-Object {$_.name -like "jdk*"} | ?{$_.PSIsContainer} | select Name
+
 
     $fromString = $null
 
-    # Check if target java is already loaded
-    if ($currentJava | Where-Object {$_.name -like $toString}){
-        write-host "Your target version of Java is already installed: " $toString
+    if ($currentJava | Where-Object {$_.name -like $newJDKVersion}){
+        write-host "Your target version of Java is already installed: " $newJDKVersion
         read-host "Press any key to continue"
     }else{
-      # Is there more than one older version of Java installed here?
-      if ($currentJava.Count){
-          $myCounter = 0
-          for($myCounter = 0; $myCounter -lt $CurrentJava.Count; $myCounter++){
-              write-host $mycounter : $currentJava[$myCounter].name.toString()
-          }
+        if ($currentJava.Count){
+            $myCounter = 0
+            for($myCounter = 0; $myCounter -lt $CurrentJava.Count; $myCounter++){
+                write-host $mycounter : $currentJava[$myCounter].name.newJDKVersion()
+            }
 
-          $myCounter = $myCounter - 1
-          $ans1 = read-host "Select the current Java version being used by PeopleSoft (0-$myCounter)"
+            $myCounter = $myCounter - 1
+            $ans1 = read-host "Select the current Java version being used by PeopleSoft (0-$myCounter)"
 
-          if (($ans1 -ge 0) -and ($ans1 -le $myCounter)){
-              $fromString = $currentJava[$ans1].name.toString()
-          }else{
-              write-host "Unknown Java version selected"
-              read-host "Press any key to continue"
-          }
-      }else{
-          $fromString = $currentJava.name.toString()
-      }
+            if (($ans1 -ge 0) -and ($ans1 -le $myCounter)){
+                $fromString = $currentJava[$ans1].name.newJDKVersion()
+            }else{
+                write-host "Unknown Java version selected"
+                read-host "Press any key to continue"
+            }
+        }else{
+            $fromString = $currentJava.name.newJDKVersion()
+        }
     }
+
     
-    #only run this if we decided the current version
+
     if ($fromString -ne $null){
         write-host "Current Java Version: " $fromString
         write-host "Installing JDK and JRE"
-
-        start-process $patchFilename @'
-        /s ADDLOCAL="ToolsFeature,SourceFeature,PublicjreFeature" /INSTALLDIR="e:\oracle\middleware_pt853\Java\jdk1.7.0_91" /INSTALLDIRPUBJRE="e:\oracle\middleware_pt853\Java\jre7" /L "e:\oracle\middleware_pt853\Java\1.7_91.log"
-'@ -verb runas
+        
+        $JDKInstallDir = $javapath + $newJDKVersion
+        $JREInstallDir = $javapath + $newJREVersion
+        $LogLocation = $javapath + $newJDKVersion + ".log"
+        $argumentString = 'ADDLOCAL="ToolsFeature,SourceFeature,PublicjreFeature" /INSTALLDIR="' + $JDKInstallDir + '" /INSTALLDIRPUBJRE="' + $JREInstallDir + '" /L "' + $LogLocation + '"'
+        start-process $patchFilename -ArgumentList $argumentString -verb runas
 
         $psoftprocesses = get-process | Where-Object {($_.name -like $toProcessString)}
         if ($psoftprocesses){
@@ -82,32 +78,31 @@ function update_java_PS(){
         write-host "Done"
     
 
-        $alleditPaths = @(
-            "\\$server\e$\oracle\Middleware_pt853\utils\bsu\bsu.cmd",
-            "\\$server\e$\oracle\Middleware_pt853\utils\bsu\bsu.sh",
-            "\\$server\e$\oracle\Middleware_pt853\utils\quickstart\quickstart.cmd",
-            "\\$server\e$\oracle\Middleware_pt853\utils\quickstart\quickstart.sh",
-            "\\$server\e$\oracle\Middleware_pt853\utils\uninstall\uninstall.cmd",
-            "\\$server\e$\oracle\Middleware_pt853\utils\uninstall\uninstall.sh",
-            "\\$server\e$\oracle\Middleware_pt853\wlserver_10.3\common\bin\commEnv.cmd",
-            "\\$server\e$\oracle\Middleware_pt853\wlserver_10.3\common\bin\commEnv.sh"
-        )
-        foreach($thispath in $alleditPaths){
-            $splitArray = $thispath.split("\")
+        $alleditPaths = @($middlewarePath + "utils\bsu\bsu.cmd") + 
+                        @($middlewarePath + "utils\bsu\bsu.sh") + 
+                        @($middlewarePath + "utils\quickstart\quickstart.cmd")+
+                        @($middlewarePath + "utils\quickstart\quickstart.sh")+
+                        @($middlewarePath + "utils\uninstall\uninstall.cmd")+
+                        @($middlewarePath + "utils\uninstall\uninstall.sh")+
+                        @($middlewarePath + "wlserver_10.3\common\bin\commEnv.cmd")+
+                        @($middlewarePath + "wlserver_10.3\common\bin\commEnv.sh")
+
+        foreach($editpath in $alleditPaths){
+            $splitArray = $editpath.split("\")
             $editFileName = $splitArray[($splitArray.Count-1)] 
-            write-host "Update" $thispath
-            if(test-path $thispath){
-                $relocateFile = "\\$server\e$\temp\" + $editFileName
-                cp $thispath $relocateFile -force
-                (get-content $thispath) -replace $fromstring,$toString | set-content $thispath
+            write-host "Update" $editpath
+            if(test-path $editpath){
+                $relocateFile = "e:\temp\" + $editFileName
+                cp $editpath $relocateFile -force
+                (get-content $editpath) -replace $fromstring,$newJDKVersion | set-content $editpath
             }
         }
 
-        $thispath = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\environment"
-        write-host "Update" $thispath
-        if (test-path $thispath){
-            $newValue = "e:\oracle\middleware_pt853\Java\" + "jdk1.7.0_91"
-            Set-ItemProperty -path $thispath -name JAVA_HOME -value $newValue
+        $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\environment"
+        write-host "Update" $regPath
+        if (test-path $regPath){
+            $newValue = $JavaPath + $newJDKVersion
+            Set-ItemProperty -path $regPath -name JAVA_HOME -value $newValue
         }
 
         write-host "Files updated"    
@@ -115,8 +110,8 @@ function update_java_PS(){
     
 
 
-    $thispath = $env:PS_CFG_HOME + "\webserv"
-    $webDomains = Get-ChildItem $thispath | Where-Object {$_.name -like "peoplesoft*"} | ?{$_.PSIsContainer}
+    $webServPath = $env:PS_CFG_HOME + "\webserv"
+    $webDomains = Get-ChildItem $webServPath | Where-Object {$_.name -like "peoplesoft*"} | ?{$_.PSIsContainer}
 
      $ans = read-host "Reinstall domains (y/n)?"
      if ($ans.ToUpper() -eq 'Y'){
@@ -141,7 +136,7 @@ function update_java_PS(){
             }
 
             foreach ($domain in $webdomains){
-                $subpath = $thispath + '\' + $domain + '\bin'
+                $subpath = $webServPath + '\' + $domain + '\bin'
                 $installExecutable = get-childitem "$subpath" | where-object {$_.name -like "uninstallNTService.cmd"} | select -expandproperty PSPath
                 $installArguments = "PIA"
                 write-host $installExecutable 'PIA'
@@ -179,5 +174,6 @@ function update_java_PS(){
         }
      }else{
         write-host "Cancelled"
+
      }
 }
