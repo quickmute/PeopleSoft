@@ -1,0 +1,31 @@
+function get-weblogic-patches(){
+  # All the weblogic patches are stored here in their own directory in the following format:
+  ## 10.3.6.0.XX.Y-patch_PPPP
+  $weblogicPatchPath = "\\serverpath\software\windows\PeopleSoft\PT8.5.3\Weblogic"
+  $patchFolder = get-childitem $weblogicPatchPath -directory -filter '10.3.6.0*' | select Name
+  $weblogic_patches = @()
+  [int]$currentVersion=0
+  foreach($folderItem in $patchFolders){
+    $splitArray1 = ($folderItem.Name).split('-')
+    $splitArray2 = $splitArray1[0].split('.')
+    $splitArray3 = $splitArray1[1].split('_')
+    [int]$version = $splitArray2[4]
+    if ($version -gt $currentVersion){
+      $currentVersion = $version
+    }
+    [int]$installOrder = $splitArray2[5]
+    $patchId = $splitArray3[1]
+    
+    $fullPathName = $weblogicPatchPath + "\" + $folderItem.Name
+    
+    $patch = New-Object System.Object
+    $patch | add-member -type NoteProperty -name pathName -value $folderItem.name
+    $patch | add-member -type NoteProperty -name fullPathName - value $fullpathName
+    $patch | add-member -type NoteProperty -name patchId -value $patchId
+    $patch | add-member -type NoteProperty -name versionNumber -value $version
+    $patch | add-member -type NoteProperty -name installOrder -value $installOrder
+    $weblogic_patches+=$patch
+  }
+  $weblogic_patches = $weblogic_patches | ?{$_.versionNumber -eq $currentVersion}
+  return $weblogic_patches
+}
