@@ -1,0 +1,15 @@
+function returnFile-bsu(){
+  param(
+    [parameter(mandatory=$false,valuefrompipeline=$true,valuefrompipelinebypropertyName=$true,HelpMessage='Hostname')]
+    [string]$hostname = $env:computername,
+    [parameter(mandatory=$true,valuefrompipeline=$true,valuefrompipelinebypropertyName=$true,HelpMessage='FileList')]
+    [system.object[]]$bsuFiles
+  )
+  $originalFile = ($bsuFiles | ?{($_.fileName -eq "registry.xml") -and ($_.fileType -eq "Original")} | select filefullPath).filefullPath.toString()
+  $newFile = ($bsuFiles | ?{($_.fileName -eq "registry.xml") -and ($_.fileType -eq "new")} | select filefullPath).fulefullPath.toString()
+  write-host "Replacing registry.xml"
+  write-host "Original: $originalFile"
+  write-host "New: $newFile"
+  cp $originalFile $newFile -fore -verbose
+  rm $originalFile -force -verbose
+}
