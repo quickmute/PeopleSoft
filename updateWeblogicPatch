@@ -14,7 +14,7 @@ function update_weblogic(){
         [string]$software_share = "e:\temp",
 
         [parameter(Mandatory=$false,ValueFromPipeLine=$true,ValueFromPipeLineByPropertyName=$true,HelpMessage='RemovePatches')]
-        $old_patches=@('EJUW','ZLNA'),
+        $old_patches=@('ZLNA','EJUW'),
 
         [parameter(Mandatory=$false,ValueFromPipeLine=$true,ValueFromPipeLineByPropertyName=$true,HelpMessage='InstallPatches')]
         $new_patches=@('UIAL')
@@ -73,7 +73,7 @@ function update_weblogic(){
     }
 
 
-
+	#Each item must be in correct order of removal, otherwise you will meet conflict
 
     foreach ($item in $old_patches){
 	    $ans = read-host "Remove $item (y/n)?"
@@ -83,7 +83,7 @@ function update_weblogic(){
 	    }
     }
 
-
+	#If applying multiple patches, it must be done in proper order
 
     $patch_download_dir = "e:\oracle\Middleware_pt853\utils\bsu\cache_dir"
     foreach($item in $new_patches){
