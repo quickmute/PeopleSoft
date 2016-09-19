@@ -1,0 +1,135 @@
+###############################################################################
+# For updating Weblogic on Peoplesoft Machines
+# 
+# Created: 9/19/2016
+# Last Edit: 9/19/2016
+# Version 1.0
+#  First build
+#
+#
+###############################################################################
+function update_weblogic(){
+    param(
+        [parameter(Mandatory=$false,ValueFromPipeLine=$true,ValueFromPipeLineByPropertyName=$true,HelpMessage='PatchLocation')]
+        [string]$software_share = "e:\temp",
+
+        [parameter(Mandatory=$false,ValueFromPipeLine=$true,ValueFromPipeLineByPropertyName=$true,HelpMessage='RemovePatches')]
+        $old_patches=@('EJUW','ZLNA'),
+
+        [parameter(Mandatory=$false,ValueFromPipeLine=$true,ValueFromPipeLineByPropertyName=$true,HelpMessage='InstallPatches')]
+        $new_patches=@('UIAL')
+    )
+    $server = $env:computername
+
+    $findString = "set MEM_ARGS=-Xms256m -Xmx512m"
+    $replaceString = "set MEM_ARGS=-Xms256m -Xmx1024m"
+    $pathRoot_bsu = "\\$server\e$\oracle\Middleware_pt853\utils\bsu\"
+    $newPath_bsu = $pathRoot_bsu + "bsu.cmd"
+    $oldPath_bsu = $pathRoot_bsu + "bsu_original.cmd"
+
+    write-host "Checking bsu.cmd..." -NoNewline
+    if((get-content $newPath_bsu | ?{$_ -like $replaceString}) -eq $null){
+	    cp $newPath_bsu $oldPath_bsu -force -verbose
+	    write-host "updating bsu.cmd with more memory..."
+	    (get-content $oldPath_bsu) | foreach-object {$_ -replace $findString,$replaceString} | set-content $newPath_bsu
+    }else{
+        write-host "ok"
+    }
+
+    set-location $pathRoot_bsu
+
+    $findString = '<product format="1.0" name="Tuxedo">.+'
+    $replaceString = "</host>"
+    $pathRoot_tux = "\\$server\e$\oracle\Middleware_pt853\"
+    $newPath_tux = $pathRoot_tux + "registry.xml"
+    $oldPath_tux = $pathRoot_tux + "registry_original.xml"
+    cp $newPath_tux $oldPath_tux -force -verbose
+    write-host "Updating registry.xml by removing reference to Tuxedo..."
+    (get-content $oldPath_tux) | foreach-object {$_ -replace $findString,$replaceString} | set-content $newPath_tux
+
+    #Stop Services
+    write-host "Stopping services"
+    $psoftservices = get-service | Where-Object {($_.name -notlike "peoplesoft_*")} | Where-Object {($_.name -notlike "peoplesoft  E:\pt*")} | Where-Object {($_.name -like "peoplesoft*")} 
+    if ($psoftservices){
+        $serviceExist = $true
+        stop-service -InputObject $psoftservices -warningaction SilentlyContinue -ErrorAction SilentlyContinue
+        $desiredState = "Stopped"
+        do{
+            $counter = 0
+            foreach($psvc in $psoftservices){
+                if($psvc.status -ne $desiredstate){
+                    $counter++
+                }
+            }
+            sleep -Seconds 1
+        }until ($counter -eq 0)
+
+        foreach ($psvc in $psoftservices){
+            write-host $psvc.status $psvc
+        }
+    }else{
+        write-host "Services not found"
+        $serviceExist = $false
+    }
+
+
+
+
+    foreach ($item in $old_patches){
+	    $ans = read-host "Remove $item (y/n)?"
+	    if ($ans -eq 'y'){
+	        write-host "Removing $item"
+            Invoke-Expression ".\bsu.cmd -verbose -remove -log=e:\temp\wls_remove.log -patchlist=$item -prod_dir=e:\oracle\Middleware_pt853\wlserver_10.3"
+	    }
+    }
+
+
+
+    $patch_download_dir = "e:\oracle\Middleware_pt853\utils\bsu\cache_dir"
+    foreach($item in $new_patches){
+        $ans = read-host "Install $item (y/n)?"
+        $fileFound = $false
+        if ($ans -eq 'y'){
+            write-host "Searching..."
+            $fileTest = $patch_download_dir + "\" + $item + ".jar"
+            if ((test-path -path $filetest) -eq $false){
+                write-host "Patch not found, copying from $software_share"
+                $folderName = (Get-ChildItem $software_share -Directory -Filter *$item* | select name).name
+                if ($folderName -ne $null){
+                    cp $software_share\$folderName\*.jar $patch_download_dir -force -Verbose
+                    cp $software_share\$folderName\*.xml $patch_download_dir -Force -Verbose
+                    $fileFound = $true
+                }else{
+                    $fileFound = $true
+                }
+                if ($fileFound){
+                    write-host "Installing $item"
+                    Invoke-Expression ".\bsu.cmd -verbose -install -log=wls_install.log -patch_download_dir=$patch_download_dir -patchlist=$item -prod_dir=e:\oracle\Middleware_pt853\wlserver_10.3"
+                }
+            }
+        }
+    }
+
+    mv $newPath_tux $pathRoot_tux\registry_vanilla.xml -Force -Verbose
+    mv $oldPath_tux $newPath_tux -Force -Verbose
+
+    if ($serviceExist){
+        write-host "Starting services"
+        start-service -InputObject $psoftservices -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+        $desiredState = "Running"
+        do{
+            $counter = 0
+            foreach($psvc in $psoftservices){
+                if($psvc.status -ne $desiredstate){
+                    $counter++
+                }
+            }
+            sleep -Seconds 1
+        }until ($counter -eq 0)
+
+        foreach ($psvc in $psoftservices){
+            write-host $psvc.status $psvc
+        }
+    }
+
+}
