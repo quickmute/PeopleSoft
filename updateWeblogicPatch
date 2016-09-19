@@ -92,6 +92,7 @@ function update_weblogic(){
         if ($ans -eq 'y'){
             write-host "Searching..."
             $fileTest = $patch_download_dir + "\" + $item + ".jar"
+        
             #File is not found, look in patch directory
             if ((test-path -path $filetest) -eq $false){
                 write-host "Patch not found, copying from $software_share"
@@ -103,6 +104,8 @@ function update_weblogic(){
                 }else{
                     $fileFound = $false
                 }
+            }else{
+            	$fileFound = $true
             }
             if ($fileFound){
 				write-host "Installing $item"
