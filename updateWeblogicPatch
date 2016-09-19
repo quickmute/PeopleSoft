@@ -98,13 +98,16 @@ function update_weblogic(){
                 write-host "Patch not found, copying from $software_share"
                 $folderName = (Get-ChildItem $software_share -Directory -Filter *$item* | select name).name
                 if ($folderName -ne $null){
+					write-host "Patch file found in $software_share"
                     cp $software_share\$folderName\*.jar $patch_download_dir -force -Verbose
                     cp $software_share\$folderName\*.xml $patch_download_dir -Force -Verbose
                     $fileFound = $true
                 }else{
+                	write-host "Patch file note found in $software_share"
                     $fileFound = $false
                 }
             }else{
+            	write-host "Patch found"
             	$fileFound = $true
             }
             if ($fileFound){
