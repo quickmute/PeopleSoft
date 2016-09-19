@@ -104,7 +104,7 @@ function update_weblogic(){
                 }
                 if ($fileFound){
                     write-host "Installing $item"
-                    Invoke-Expression ".\bsu.cmd -verbose -install -log=wls_install.log -patch_download_dir=$patch_download_dir -patchlist=$item -prod_dir=e:\oracle\Middleware_pt853\wlserver_10.3"
+                    Invoke-Expression ".\bsu.cmd -verbose -install -log=e:\temp\wls_install.log -patch_download_dir=$patch_download_dir -patchlist=$item -prod_dir=e:\oracle\Middleware_pt853\wlserver_10.3"
                 }
             }
         }
