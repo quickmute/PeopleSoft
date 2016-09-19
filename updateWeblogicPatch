@@ -92,6 +92,7 @@ function update_weblogic(){
         if ($ans -eq 'y'){
             write-host "Searching..."
             $fileTest = $patch_download_dir + "\" + $item + ".jar"
+            #File is not found, look in patch directory
             if ((test-path -path $filetest) -eq $false){
                 write-host "Patch not found, copying from $software_share"
                 $folderName = (Get-ChildItem $software_share -Directory -Filter *$item* | select name).name
@@ -100,13 +101,13 @@ function update_weblogic(){
                     cp $software_share\$folderName\*.xml $patch_download_dir -Force -Verbose
                     $fileFound = $true
                 }else{
-                    $fileFound = $true
-                }
-                if ($fileFound){
-                    write-host "Installing $item"
-                    Invoke-Expression ".\bsu.cmd -verbose -install -log=e:\temp\wls_install.log -patch_download_dir=$patch_download_dir -patchlist=$item -prod_dir=e:\oracle\Middleware_pt853\wlserver_10.3"
+                    $fileFound = $false
                 }
             }
+            if ($fileFound){
+				write-host "Installing $item"
+				Invoke-Expression ".\bsu.cmd -verbose -install -log=e:\temp\wls_install.log -patch_download_dir=$patch_download_dir -patchlist=$item -prod_dir=e:\oracle\Middleware_pt853\wlserver_10.3"
+			}
         }
     }
 
