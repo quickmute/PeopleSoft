@@ -23,7 +23,7 @@ function update_weblogic(){
 
     $findString = "set MEM_ARGS=-Xms256m -Xmx512m"
     $replaceString = "set MEM_ARGS=-Xms256m -Xmx1024m"
-    $pathRoot_bsu = "\\$server\e$\oracle\Middleware_pt853\utils\bsu\"
+    $pathRoot_bsu = "e:\oracle\Middleware_pt853\utils\bsu\"
     $newPath_bsu = $pathRoot_bsu + "bsu.cmd"
     $oldPath_bsu = $pathRoot_bsu + "bsu_original.cmd"
 
