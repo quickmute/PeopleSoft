@@ -1,0 +1,173 @@
+<HTML>
+<HEAD>
+<!--
+* ***************************************************************
+*  This software and related documentation are provided under a
+*  license agreement containing restrictions on use and
+*  disclosure and are protected by intellectual property
+*  laws. Except as expressly permitted in your license agreement
+*  or allowed by law, you may not use, copy, reproduce,
+*  translate, broadcast, modify, license, transmit, distribute,
+*  exhibit, perform, publish or display any part, in any form or
+*  by any means. Reverse engineering, disassembly, or
+*  decompilation of this software, unless required by law for
+*  interoperability, is prohibited.
+*  The information contained herein is subject to change without
+*  notice and is not warranted to be error-free. If you find any
+*  errors, please report them to us in writing.
+*  
+*  Copyright (C) 1988, 2012, Oracle and/or its affiliates.
+*  All Rights Reserved.
+* ***************************************************************
+-->
+<!--
+-->
+<!--
+*                                                                    
+-->
+<!--* ****************************************************************** 
+* ****************************************************************** 
+*                                                                    
+*                                                                    
+*                                                                    
+*                                                                    
+* ****************************************************************** 
+*                                                                    
+********************************************************************-->
+
+<style>
+body {font-family: Arial, Helvetica, sans-serif;}
+
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}
+
+/* The Close Button */
+.close {
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+table, th, td{
+	border-style: solid;
+	border-color: #ffffff #ffff00;
+	background-color: rgb(255,0,0); /* Fallback color */
+	background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+</style>
+
+
+<!--meta HTTP-EQUIV='Refresh' CONTENT='1; URL=../psp/EXTST92/?cmd=login'-->
+<title>DoD Notice and Consent</title>
+</HEAD>
+<body>
+<table style="width:60%" align="center" >
+<tr align="center">
+<td>
+<h2>DoD Notice and Consent Banner</h2>
+</td>
+</tr>
+<tr>
+<td>
+<p>You are accessing a U.S. Government (USG) Information System (IS) that is provided for USG-authorized use only.</p>
+<p>By using this IS (which includes any device attached to this IS), you consent to the following conditions:</p>
+<ul>
+<li>The USG routinely intercepts and monitors communications on this IS for purposes including, but not limited to, penetration testing, COMSEC monitoring, network operations and defense, personnel misconduct (PM), law enforcement (LE), and counterintelligence (CI) investigations.
+</li>
+<li>At any time, the USG may inspect and seize data stored on this IS.
+    Communications using, or data stored on, this IS are not private, are subject to routine monitoring, interception, and search, and may be disclosed or used for any USG-authorized purpose.
+</li>
+<li>This IS includes security measures (e.g., authentication and access controls) to protect USG interests--not for your personal benefit or privacy.
+</li>
+<li>
+    Notwithstanding the above, using this IS does not constitute consent to PM, LE or CI investigative searching or monitoring of the content of privileged communications, or work products, related to personal representation or services by attorneys, psychotherapists, or clergy, and their assistants. Such communications and work products are private and confidential. See User Agreement for details.
+</li>
+</ul>
+
+</td>
+</tr>
+<tr align="center">
+<td>
+<p>I have read and consent to the terms of the IS User Agreement</p>
+<button id="myBtn">I Agree</button>
+</td>
+</tr>
+
+</table>
+
+
+
+<!-- The Modal -->
+<div id="myModal" class="modal">
+
+  <!-- Modal content -->
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <p>NGA Contractor eNom will be unavailable on Tuesday 26 Jun 2018 from 0900-2100 EDT for scheduled maintenance.</p>
+  </div>
+
+</div>
+<script>
+// Get the modal
+var modal = document.getElementById('myModal');
+
+// Get the button that opens the modal
+var btn = document.getElementById("myBtn");
+
+// Get the <span> element that closes the modal
+var span = document.getElementsByClassName("close")[0];
+
+// When the user clicks the button, open the modal 
+btn.onclick = function() {
+    modal.style.display = "block";
+}
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() {
+    modal.style.display = "none";
+    window.location = "../psp/EXTST92/?cmd=login";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+	window.location = "../psp/EXTST92/?cmd=login";
+    }
+
+}
+</script>
+
+</body>
+
+</HTML>
